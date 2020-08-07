@@ -20,6 +20,18 @@ class SiFrom extends StatefulWidget {
 class _SiFromState extends State<SiFrom> {
   final double _minimumPadding = 5.0;
   var _currencies = ["Tk", "Dollars", "Pounds"];
+  var _currentItemSelected = "Tk";
+  TextEditingController principalController = TextEditingController();
+  TextEditingController interestController = TextEditingController();
+  TextEditingController termController = TextEditingController();
+
+  var display = "";
+
+  void initState(){
+    super.initState();
+    _currentItemSelected =_currencies[0];
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -39,6 +51,7 @@ class _SiFromState extends State<SiFrom> {
                 padding: EdgeInsets.only(
                     top: _minimumPadding, bottom: _minimumPadding),
                 child: TextField(
+                  controller: principalController,
                   style: textStyle,
                   keyboardType: TextInputType.number,
                   decoration: InputDecoration(
@@ -52,6 +65,7 @@ class _SiFromState extends State<SiFrom> {
                 padding: EdgeInsets.only(
                     top: _minimumPadding, bottom: _minimumPadding),
                 child: TextField(
+                  controller: interestController,
                   keyboardType: TextInputType.number,
                   style: textStyle,
                   decoration: InputDecoration(
@@ -68,6 +82,7 @@ class _SiFromState extends State<SiFrom> {
                   children: <Widget>[
                     Expanded(
                         child: TextField(
+                          controller: termController,
                       style: textStyle,
                       keyboardType: TextInputType.number,
                       decoration: InputDecoration(
@@ -89,8 +104,12 @@ class _SiFromState extends State<SiFrom> {
                           child: Text(value),
                         );
                       }).toList(),
-                      value: "Tk",
-                      onChanged: (String newValueSelected) {},
+                      value: _currentItemSelected,
+                      onChanged: (String newValueSelected) {
+                        //  push method
+                        _onDropDownSelected(newValueSelected);
+
+                      },
                     ))
                   ],
                 )),
@@ -108,7 +127,12 @@ class _SiFromState extends State<SiFrom> {
                               textScaleFactor: 1.5,
                             ),
                             elevation: 6.0,
-                            onPressed: () {})),
+                            onPressed: () {
+                              setState(() {
+                               this.display =_calculateTotalReturns();
+                              });
+
+                            })),
                     Expanded(
                         child: RaisedButton(
                             color: Theme.of(context).primaryColorDark,
@@ -118,14 +142,18 @@ class _SiFromState extends State<SiFrom> {
                               textScaleFactor: 1.5,
                             ),
                             elevation: 6.0,
-                            onPressed: () {})),
+                            onPressed: () {
+                              setState(() {
+                                _reset();
+                              });
+                            })),
                   ],
                 )),
             Padding(
               padding: EdgeInsets.all(_minimumPadding * 2.0),
               child: Center(
                 child: Text(
-                  'To Do',
+                  this.display,
                   style: TextStyle(fontSize: 20.0),
                 ),
               ),
@@ -147,5 +175,31 @@ class _SiFromState extends State<SiFrom> {
       child: image,
       margin: EdgeInsets.all(_minimumPadding * 10.0),
     );
+  }
+
+  //  here function create for dropdown item selected
+  void _onDropDownSelected(String newValueSelected){
+    setState(() {
+      this._currentItemSelected =newValueSelected;
+    });
+  }
+
+
+  String _calculateTotalReturns(){
+    double principal = double.parse(principalController.text);
+    double interest = double.parse(interestController.text);
+    double term = double.parse(termController.text);
+
+    double totalAmountPayable = principal +(principal *interest*term) /100;
+
+    String result = 'After $term years, your investment will be worth $totalAmountPayable $_currentItemSelected';
+    return result;
+  }
+  void _reset(){
+    principalController.text='';
+    interestController.text = '';
+    termController.text='';
+    _currentItemSelected=_currencies[0];
+    display ='';
   }
 }
