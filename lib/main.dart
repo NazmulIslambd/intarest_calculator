@@ -1,5 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart';
 
 void main() => runApp(MaterialApp(
       debugShowCheckedModeBanner: false,
@@ -18,6 +20,8 @@ class SiFrom extends StatefulWidget {
 }
 
 class _SiFromState extends State<SiFrom> {
+  var _formKey = GlobalKey<FormState>();
+
   final double _minimumPadding = 5.0;
   var _currencies = ["Tk", "Dollars", "Pounds"];
   var _currentItemSelected = "Tk";
@@ -27,11 +31,10 @@ class _SiFromState extends State<SiFrom> {
 
   var display = "";
 
-  void initState(){
+  void initState() {
     super.initState();
-    _currentItemSelected =_currencies[0];
+    _currentItemSelected = _currencies[0];
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -42,125 +45,154 @@ class _SiFromState extends State<SiFrom> {
       appBar: AppBar(
         title: Text("Simple Interest Calculator"),
       ),
-      body: Container(
-        margin: EdgeInsets.all(_minimumPadding * 2),
-        child: ListView(
-          children: <Widget>[
-            getImageAsset(),
-            Padding(
-                padding: EdgeInsets.only(
-                    top: _minimumPadding, bottom: _minimumPadding),
-                child: TextField(
-                  controller: principalController,
-                  style: textStyle,
-                  keyboardType: TextInputType.number,
-                  decoration: InputDecoration(
-                      labelText: 'Principal',
-                      labelStyle: textStyle,
-                      hintText: 'Enter Principal e.g. 1000',
-                      border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(5.0))),
-                )),
-            Padding(
-                padding: EdgeInsets.only(
-                    top: _minimumPadding, bottom: _minimumPadding),
-                child: TextField(
-                  controller: interestController,
-                  keyboardType: TextInputType.number,
-                  style: textStyle,
-                  decoration: InputDecoration(
-                      labelText: 'Interest',
-                      labelStyle: textStyle,
-                      hintText: 'Enter Interest e.g. 10.0',
-                      border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(5.0))),
-                )),
-            Padding(
-                padding: EdgeInsets.only(
-                    top: _minimumPadding, bottom: _minimumPadding),
-                child: Row(
-                  children: <Widget>[
-                    Expanded(
-                        child: TextField(
-                          controller: termController,
+//      i declare here form remove container
+      body: Form(
+//        i instanciate form which i declare variable use
+          key: _formKey,
+          child: Padding(
+            padding: EdgeInsets.all(_minimumPadding * 2),
+            child: ListView(
+              children: <Widget>[
+                getImageAsset(),
+                Padding(
+                    padding: EdgeInsets.only(
+                        top: _minimumPadding, bottom: _minimumPadding),
+                    child: TextFormField(
+                      validator: (value) {
+                        if (value.isEmpty) {
+                          return 'you can\'t Empty';
+                        }
+                        return null;
+                      },
+                      controller: principalController,
+                      inputFormatters: [
+                        WhitelistingTextInputFormatter.digitsOnly
+                      ],
                       style: textStyle,
                       keyboardType: TextInputType.number,
                       decoration: InputDecoration(
-                          labelText: 'Term',
+                          labelText: 'Principal',
                           labelStyle: textStyle,
-                          hintText: 'Enter Term number',
+                          hintText: 'Enter Principal e.g. 1000',
                           border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(5.0))),
                     )),
-                    Container(
-                      width: _minimumPadding * 5,
-                    ),
-                    Expanded(
-                        child: DropdownButton<String>(
-                      style: textStyle,
-                      items: _currencies.map((String value) {
-                        return DropdownMenuItem<String>(
-                          value: value,
-                          child: Text(value),
-                        );
-                      }).toList(),
-                      value: _currentItemSelected,
-                      onChanged: (String newValueSelected) {
-                        //  push method
-                        _onDropDownSelected(newValueSelected);
-
+                Padding(
+                    padding: EdgeInsets.only(
+                        top: _minimumPadding, bottom: _minimumPadding),
+                    child: TextFormField(
+                      controller: interestController,
+                      validator: (value) {
+                        if (value.isEmpty) {
+                          return 'you can\'t Empty';
+                        }
+                        return null;
                       },
-                    ))
-                  ],
-                )),
-            Padding(
-                padding: EdgeInsets.only(
-                    top: _minimumPadding * 5.0, bottom: _minimumPadding * 5.0),
-                child: Row(
-                  children: <Widget>[
-                    Expanded(
-                        child: RaisedButton(
-                            color: Theme.of(context).accentColor,
-                            textColor: Theme.of(context).primaryColorDark,
-                            child: Text(
-                              'Calculate',
-                              textScaleFactor: 1.5,
-                            ),
-                            elevation: 6.0,
-                            onPressed: () {
-                              setState(() {
-                               this.display =_calculateTotalReturns();
-                              });
+                      keyboardType: TextInputType.number,
+                      inputFormatters: [
+                        WhitelistingTextInputFormatter.digitsOnly
+                      ],
+                      decoration: InputDecoration(
+                          labelText: 'Interest',
+                          labelStyle: textStyle,
+                          errorStyle:
+                              TextStyle(color: Colors.white, fontSize: 14),
+                          hintText: 'Enter Interest e.g. 10.0',
+                          border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(5.0))),
+                    )),
+                Padding(
+                    padding: EdgeInsets.only(
+                        top: _minimumPadding, bottom: _minimumPadding),
+                    child: Row(
+                      children: <Widget>[
+                        Expanded(
+                            child: TextFormField(
+                          controller: termController,
 
-                            })),
-                    Expanded(
-                        child: RaisedButton(
-                            color: Theme.of(context).primaryColorDark,
-                            textColor: Theme.of(context).primaryColorLight,
-                            child: Text(
-                              'Reset',
-                              textScaleFactor: 1.5,
-                            ),
-                            elevation: 6.0,
-                            onPressed: () {
-                              setState(() {
-                                _reset();
-                              });
-                            })),
-                  ],
-                )),
-            Padding(
-              padding: EdgeInsets.all(_minimumPadding * 2.0),
-              child: Center(
-                child: Text(
-                  this.display,
-                  style: TextStyle(fontSize: 20.0),
-                ),
-              ),
-            )
-          ],
-        ),
-      ),
+                          style: textStyle,
+                          keyboardType: TextInputType.number,
+                          inputFormatters: [
+                            WhitelistingTextInputFormatter.digitsOnly
+                          ],
+                          //digit only support
+                          decoration: InputDecoration(
+                              labelText: 'Term',
+                              labelStyle: textStyle,
+                              hintText: 'Enter Term number',
+                              border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(5.0))),
+                        )),
+                        Container(
+                          width: _minimumPadding * 5,
+                        ),
+                        Expanded(
+                            child: DropdownButton<String>(
+                          style: textStyle,
+                          items: _currencies.map((String value) {
+                            return DropdownMenuItem<String>(
+                              value: value,
+                              child: Text(value),
+                            );
+                          }).toList(),
+                          value: _currentItemSelected,
+                          onChanged: (String newValueSelected) {
+                            //  push method
+                            _onDropDownSelected(newValueSelected);
+                          },
+                        ))
+                      ],
+                    )),
+                Padding(
+                    padding: EdgeInsets.only(
+                        top: _minimumPadding * 5.0,
+                        bottom: _minimumPadding * 5.0),
+                    child: Row(
+                      children: <Widget>[
+                        Expanded(
+                            child: RaisedButton(
+                                color: Theme.of(context).accentColor,
+                                textColor: Theme.of(context).primaryColorDark,
+                                child: Text(
+                                  'Calculate',
+                                  textScaleFactor: 1.5,
+                                ),
+                                elevation: 6.0,
+                                onPressed: () {
+                                  setState(() {
+                                    if (_formKey.currentState.validate()) {
+                                      this.display = _calculateTotalReturns();
+                                    }
+                                  });
+                                })),
+                        Expanded(
+                            child: RaisedButton(
+                                color: Theme.of(context).primaryColorDark,
+                                textColor: Theme.of(context).primaryColorLight,
+                                child: Text(
+                                  'Reset',
+                                  textScaleFactor: 1.5,
+                                ),
+                                elevation: 6.0,
+                                onPressed: () {
+                                  setState(() {
+                                    _reset();
+                                  });
+                                })),
+                      ],
+                    )),
+                Padding(
+                  padding: EdgeInsets.all(_minimumPadding * 2.0),
+                  child: Center(
+                    child: Text(
+                      this.display,
+                      style: TextStyle(fontSize: 20.0),
+                    ),
+                  ),
+                )
+              ],
+            ),
+          )),
     ));
   }
 
@@ -178,28 +210,29 @@ class _SiFromState extends State<SiFrom> {
   }
 
   //  here function create for dropdown item selected
-  void _onDropDownSelected(String newValueSelected){
+  void _onDropDownSelected(String newValueSelected) {
     setState(() {
-      this._currentItemSelected =newValueSelected;
+      this._currentItemSelected = newValueSelected;
     });
   }
 
-
-  String _calculateTotalReturns(){
+  String _calculateTotalReturns() {
     double principal = double.parse(principalController.text);
     double interest = double.parse(interestController.text);
     double term = double.parse(termController.text);
 
-    double totalAmountPayable = principal +(principal *interest*term) /100;
+    double totalAmountPayable = principal + (principal * interest * term) / 100;
 
-    String result = 'After $term years, your investment will be worth $totalAmountPayable $_currentItemSelected';
+    String result =
+        'After $term years, your investment will be worth $totalAmountPayable $_currentItemSelected';
     return result;
   }
-  void _reset(){
-    principalController.text='';
+
+  void _reset() {
+    principalController.text = '';
     interestController.text = '';
-    termController.text='';
-    _currentItemSelected=_currencies[0];
-    display ='';
+    termController.text = '';
+    _currentItemSelected = _currencies[0];
+    display = '';
   }
 }
